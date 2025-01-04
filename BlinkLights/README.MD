@@ -3,4 +3,5 @@
 modules which are plugged into the board.</p>
 <p>Once you run the program, you can press values from 1 to 9 on the console to set the speed.  Valid characters for speed will echo back to the console.  
 Obviously, Control-C will exit the program.<p>
+<p>I've tested the assembly using SLR180 by SLR Systems<p>
   <p> -- Ricky Bryce</p>
