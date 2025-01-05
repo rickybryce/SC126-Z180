@@ -143,4 +143,4 @@ SPEEDVAL:   DB  0AH  ; SPEED VALUE TO USE
 CHARRCV:    DB  00H  ; CHARACTER RECEIVED FROM CONSOLE
 
      END             ; END OF ASSEMBLY CODE
-
+
