@@ -1,0 +1,109 @@
+; LCD DISPLAY BY RICKY BRYCE
+; 05 JAN 2025
+; COMPILES UNDER SLR180 ASSEMBLER
+; IE: SLR180 LCD.CCC/F (FOR FULL LISTING ON C DRIVE)
+
+; ------------------------------------
+; +---------- DECLARATIONS ----------+
+; ------------------------------------
+
+     ORG 0100H       ; CP/M PROGRAMS BEGIN AT 100H
+
+CPORT:  EQU  06H     ; COMMAND PORT
+DPORT:  EQU  07H     ; DATA PORT
+
+; ------------------------------------
+; +--------- INITIALIZATION ---------+
+; ------------------------------------
+
+INIT:
+     XOR A           ; INITIALIZE ACCUMULATOR
+
+     LD B,03H        ; RUN THE LOOP 3X
+INITLOOP:
+     LD A,30H        ; INITIALIZE DISPLAY
+     OUT CPORT,A     ; SEND TO CONTROL PORT
+
+     PUSH BC         ; BACKUP BC
+     LD B,0FFH       ; SET LOOP
+
+;    (( > 25MS BETWEEN DATA COMMANDS))
+INITDELAY:
+     CALL PREDELAY   ; SHORT DELAY
+     DJNZ INITDELAY  ; LOOP BACK TO NEST DELAYS
+
+     POP BC          ; RESTORE BC
+     DJNZ INITLOOP   ; LOOP 3 TIMES
+
+     LD A,38H        ; 8 BIT AND 5X7 FONT
+     OUT CPORT,A     ; INIT LCD FUNCTION SET
+     CALL PREDELAY   ; SHORT DELAY
+     LD A,0EH        ; TURN ON DISPLAY & CURSOR & BLINK OFF
+     OUT CPORT,A     ; INIT LCD DISPLAY CONTROL
+     CALL PREDELAY   ; SHORT DELAY
+     LD A,06H        ; CURSOR MOVING DIRECTION RIGHT
+     OUT CPORT,A     ; INIT LCD ENTRY MODE
+     CALL PREDELAY   ; SHORT DELAY
+     LD A,01H        ; CURSOR MOVING RIGHT
+     OUT CPORT,A     ; CLEAR DISPLAY
+     CALL PREDELAY   ; SHORT DELAY
+
+; ------------------------------------
+; +---------- MAIN ROUTINE ----------+
+; ------------------------------------
+
+MAIN:
+;    (((SEND MESSAGE TO CONSOLE)))
+     LD DE,MESSAGE   ; LOAD DE WITH MESSAGE WRITE DATA
+     LD C,09H        ; FUNCTION CALL TO WRITE TO CONSOLE
+     CALl 5          ; CALL BDOS TO EXECUTE DISPLAY
+
+;    (((DISPLAY MESSAGE TO LCD)))
+     LD HL,MESSAGE   ; SET UP INDEX REGISTER
+     LD B,10H        ; SET UP B TO LOOP FOR EACH LETTER
+
+;    ((FIRST LCD LINE))
+MSGLOOP1:
+     LD A,(HL)       ; LOAD A WITH NEXT LETTER
+     CALL PREDELAY   ; SHORT DELAY
+     OUT DPORT,A     ; SEND LETTER TO LCD
+     INC HL          ; GET NEXT MEMORY CELL
+     DJNZ MSGLOOP1   ; LOOP BACK FOR NEXT LETTER   
+
+     LD A,0C0H       ; LOAD A WITH VALUE TO GO TO NEXT LINE
+     CALL PREDELAY   ; SHORT DELAY
+     OUT CPORT,A     ; SEND TO  DISPLAY
+
+     LD B,10H        ; LOOP FOR EACH LETTER
+
+;    ((SECOND LCD LINE))
+MSGLOOP2
+     LD A,(HL)       ; LOAD A WITH NEXT LETTER
+     CALL PREDELAY   ; SHORT DELAY
+     OUT DPORT,A     ; SEND LETTER TO LCD
+     INC HL          ; GO TO NEXT MEMORY CELL
+     DJNZ MSGLOOP2   ; LOOP BACK FOR NEXT LETTER
+     JP END          ; END PROGRAM
+
+; ------------------------------------
+; +--------- DELAY ROUTINE ----------+
+; ------------------------------------
+
+PREDELAY:
+     PUSH BC         ; BACKUP BC
+     LD B,0FFH       ; LOAD DELAY TIME
+DELAY:
+     DJNZ DELAY      ; LOOP BACK FOR DELAY
+     POP BC          ; RESTORE BC
+     RET             ; RETURN FROM SUBROUTINE
+
+; ------------------------------------
+; +----------- DATA BLOCK -----------+
+; ------------------------------------
+
+MESSAGE:  DEFM "HAPPY BIRTHDAY  SC126!           $ "
+
+END:
+     RST 0
+
+     END
